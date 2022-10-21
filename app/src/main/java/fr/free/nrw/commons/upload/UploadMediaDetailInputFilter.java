@@ -23,6 +23,7 @@ public class UploadMediaDetailInputFilter implements InputFilter {
             Pattern.compile("\\x{FEFF}"),
             Pattern.compile("\\x{00AD}"),
             Pattern.compile("[\\x{E000}-\\x{F8FF}\\x{FFF0}-\\x{FFFF}]"),
+            Pattern.compile("[^\\x{0000}-\\x{FFFF}\\p{sc=Han}]"),
             Pattern.compile("[^\\x{0000}-\\x{FFFF}\\p{sc=Han}]")
         };
     }
@@ -56,6 +57,15 @@ public class UploadMediaDetailInputFilter implements InputFilter {
     }
 
     /**
+     * Convert Japanese spaces to English spaces
+     * @param jpSpace {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    private CharSequence convertJapSpaceToEngSpace(CharSequence jpSpace) {
+        return ((String)jpSpace).replaceAll("\\x{3000}", " ");
+    }
+
+    /**
      * Filters out any blocklisted characters.
      * @param source {@inheritDoc}
      * @param start {@inheritDoc}
@@ -65,16 +75,11 @@ public class UploadMediaDetailInputFilter implements InputFilter {
      * @param dend {@inheritDoc}
      * @return {@inheritDoc}
      */
-    @Override
+    @ Override
     public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart,
         int dend) {
-        if (checkBlocklisted(source)) {
-            if (start == dstart) {
-                return dest;
-            }
-
-            return removeBlocklisted(source);
-        }
-        return null;
+            source = convertJapSpaceToEngSpace(source);
+            source = removeBlocklisted(source);
+            return source;
     }
 }
