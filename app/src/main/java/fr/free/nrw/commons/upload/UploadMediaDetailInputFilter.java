@@ -17,12 +17,13 @@ public class UploadMediaDetailInputFilter implements InputFilter {
      */
     public UploadMediaDetailInputFilter() {
         patterns = new Pattern[]{
-            Pattern.compile("[\\x{00A0}\\x{1680}\\x{180E}\\x{2000}-\\x{200B}\\x{2028}\\x{2029}\\x{202F}\\x{205F}\\x{3000}]"),
+            Pattern.compile("[\\x{00A0}\\x{1680}\\x{180E}\\x{2000}-\\x{200B}\\x{2028}\\x{2029}\\x{202F}\\x{205F}]"),
             Pattern.compile("[\\x{202A}-\\x{202E}]"),
             Pattern.compile("\\p{Cc}"),
             Pattern.compile("\\x{FEFF}"),
             Pattern.compile("\\x{00AD}"),
             Pattern.compile("[\\x{E000}-\\x{F8FF}\\x{FFF0}-\\x{FFFF}]"),
+            Pattern.compile("[^\\x{0000}-\\x{FFFF}\\p{sc=Han}]"),
             Pattern.compile("[^\\x{0000}-\\x{FFFF}\\p{sc=Han}]")
         };
     }
@@ -56,6 +57,15 @@ public class UploadMediaDetailInputFilter implements InputFilter {
     }
 
     /**
+     * Convert Japanese spaces to English spaces
+     * @param jpSpace {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    private CharSequence convertJapSpaceToEngSpace(CharSequence jpSpace) {
+        return ((String)jpSpace).replaceAll("\\x{3000}", " ");
+    }
+
+    /**
      * Filters out any blocklisted characters.
      * @param source {@inheritDoc}
      * @param start {@inheritDoc}
@@ -65,16 +75,11 @@ public class UploadMediaDetailInputFilter implements InputFilter {
      * @param dend {@inheritDoc}
      * @return {@inheritDoc}
      */
-    @Override
+    @ Override
     public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart,
         int dend) {
-        if (checkBlocklisted(source)) {
-            if (start == dstart) {
-                return dest;
-            }
-
-            return removeBlocklisted(source);
-        }
-        return null;
+            source = convertJapSpaceToEngSpace(source);
+            source = removeBlocklisted(source);
+            return source;
     }
 }
